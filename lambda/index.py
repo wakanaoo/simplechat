@@ -46,28 +46,19 @@ def lambda_handler(event, context):
         print("Using model:", MODEL_ID)
         
         # 会話履歴を使用
-        messages = conversation_history.copy()
+        
         
         # ユーザーメッセージを追加
-        messages.append({
-            "role": "user",
-            "content": message
-        })
+       
         
         # Nova Liteモデル用のリクエストペイロードを構築
         # 会話履歴を含める
-        bedrock_messages = []
-        for msg in messages:
-            if msg["role"] == "user":
-                bedrock_messages.append({
-                    "role": "user",
-                    "content": [{"text": msg["content"]}]
-                })
-            elif msg["role"] == "assistant":
-                bedrock_messages.append({
-                    "role": "assistant", 
-                    "content": [{"text": msg["content"]}]
-                })
+        bedrock_messages = [
+            {
+                "role": "user",
+                "content": [{"text": message}]
+            }
+        ]
         
         # invoke_model用のリクエストペイロード
         request_payload = {
@@ -101,10 +92,7 @@ def lambda_handler(event, context):
         assistant_response = response_body['output']['message']['content'][0]['text']
         
         # アシスタントの応答を会話履歴に追加
-        messages.append({
-            "role": "assistant",
-            "content": assistant_response
-        })
+        
         
         # 成功レスポンスの返却
         return {
@@ -117,8 +105,7 @@ def lambda_handler(event, context):
             },
             "body": json.dumps({
                 "success": True,
-                "response": assistant_response,
-                "conversationHistory": messages
+                "response": assistant_response
             })
         }
         
